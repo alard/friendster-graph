@@ -1,0 +1,19 @@
+Download Friendster friend lists, to investigate the Friendster social network.
+
+This script will contact a central tracker to get an id range (of 10,000 Friendster
+ids at a time). It will then download the friends lists for these users and parse
+them to extract the user ids of the friends. The list of connections for each user
+will be saved to a local file and submitted back to the tracker.
+This process takes between 200 to 300 seconds for each range of 10,000 ids. The
+html pages it downloads are fairly large, but the resulting list of friends is
+much smaller.
+
+To run this script you need the typhoeus gem:
+
+  gem install typhoeus
+
+Then run
+
+  ruby bff-graph-client.rb
+
+If you press any key, the script will complete the current range and exit.
