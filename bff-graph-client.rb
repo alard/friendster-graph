@@ -243,10 +243,14 @@ until interrupted
       f.puts(result)
     end
 
+    # compress result
+    compressed_result = Zlib::Deflate.deflate(result)
+    
     # post result
-    puts "Submitting results..."
+    puts "Submitting results... (#{ compressed_result.size / 1024 } kB / #{ result.size / 1024 } kB uncompressed)"
     req = Net::HTTP::Post.new("/done/#{ id }")
-    req.body = Zlib::Deflate.deflate(result)
+    req.add_field("Content-Type", "application/octet-stream")
+    req.body = compressed_result
     res = Net::HTTP.start("friendster-tracker.heroku.com", 80) { |http| http.request(req) }
     raise "HTTP Error: #{ res }" unless res.is_a?(Net::HTTPSuccess)
     
