@@ -21,8 +21,18 @@
 # If you press any key, the script will complete the current range and exit.
 #
 #
+# Version 2, 21 June 2011. Made 'max_concurrency' a constant.
 # Version 1, 21 June 2011.
 #
+
+
+#
+# This is the number of concurrent requests. Set this to something smaller
+# if you want the script to go slower.
+#
+MAX_CONCURRENCY = 100
+
+
 
 require "rubygems"
 require "typhoeus"
@@ -61,7 +71,7 @@ end
 
 class BFF
   def initialize
-    @hydra = Typhoeus::Hydra.new(:max_concurrency => 100)
+    @hydra = Typhoeus::Hydra.new(:max_concurrency => MAX_CONCURRENCY)
     @hydra.disable_memoization
     class << @hydra.instance_variable_get(:@queue)
       def shift
@@ -218,6 +228,8 @@ until interrupted
 
     bff.run
 
+    number_of_edges = 0
+
     lines += bff.results.sort_by{|k,v|k}.map do |profile_id, result|
       case result
       when :private
@@ -225,7 +237,9 @@ until interrupted
       when :not_found
         "#{ profile_id }:notfound"
       when Array
-        "#{ profile_id }:" + result.sort.uniq.join(",")
+        friends = result.sort.uniq
+        number_of_edges += friends.length
+        "#{ profile_id }:" + friends.join(",")
       else
         raise "#{ profile_id } #{ result }"
       end
@@ -235,6 +249,7 @@ until interrupted
 
     puts
     puts "#{ end_time.to_i - start_time.to_i } seconds"
+    puts "Found #{ number_of_edges } friends!"
 
     result = lines.join("\n")
 
