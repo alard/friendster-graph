@@ -16,7 +16,7 @@
 #
 # Then run
 #
-#   ruby bff-hydra-client.rb
+#   ruby bff-graph-client.rb
 #
 # If you press any key, the script will complete the current range and exit.
 #
@@ -246,7 +246,7 @@ until interrupted
     # post result
     puts "Submitting results..."
     req = Net::HTTP::Post.new("/done/#{ id }")
-    req.body = result
+    req.body = Zlib::Deflate.deflate(result)
     res = Net::HTTP.start("friendster-tracker.heroku.com", 80) { |http| http.request(req) }
     raise "HTTP Error: #{ res }" unless res.is_a?(Net::HTTPSuccess)
     
