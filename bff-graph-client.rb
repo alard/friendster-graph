@@ -21,6 +21,7 @@
 # If you press any key, the script will complete the current range and exit.
 #
 #
+# Version 5, 23 June 2011. Remove second range if finished before the first.
 # Version 4, 23 June 2011. Corrected small mistake with id numbers.
 #                          Make sure that the results of the last thread are
 #                          saved and submitted before quitting.
@@ -318,12 +319,12 @@ begin
   until $interrupted
 
     until $bff_queue.size < 2
-      first_bff = $bff_queue.first
-      until first_bff.done?
+      until $bff_queue.any?{ |bff| bff.done }
         print_status
         sleep 5
       end
-      $bff_queue.shift
+      first_bff = $bff_queue.select{ |bff| bff.done }.first
+      $bff_queue.delete(first_bff)
       first_bff.process_and_submit_results
     end
 
@@ -357,12 +358,12 @@ begin
   end
 
   until $bff_queue.empty?
-    first_bff = $bff_queue.first
-    until first_bff.done?
+    until $bff_queue.any?{ |bff| bff.done }
       print_status
       sleep 5
     end
-    $bff_queue.shift
+    first_bff = $bff_queue.select{ |bff| bff.done }.first
+    $bff_queue.delete(first_bff)
     first_bff.process_and_submit_results
   end
 
