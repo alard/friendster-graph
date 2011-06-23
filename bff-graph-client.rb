@@ -319,11 +319,11 @@ begin
   until $interrupted
 
     until $bff_queue.size < 2
-      until $bff_queue.any?{ |bff| bff.done }
+      until $bff_queue.any?{ |bff| bff.done? }
         print_status
         sleep 5
       end
-      first_bff = $bff_queue.select{ |bff| bff.done }.first
+      first_bff = $bff_queue.select{ |bff| bff.done? }.first
       $bff_queue.delete(first_bff)
       first_bff.process_and_submit_results
     end
@@ -358,11 +358,11 @@ begin
   end
 
   until $bff_queue.empty?
-    until $bff_queue.any?{ |bff| bff.done }
+    until $bff_queue.any?{ |bff| bff.done? }
       print_status
       sleep 5
     end
-    first_bff = $bff_queue.select{ |bff| bff.done }.first
+    first_bff = $bff_queue.select{ |bff| bff.done? }.first
     $bff_queue.delete(first_bff)
     first_bff.process_and_submit_results
   end
