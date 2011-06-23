@@ -21,6 +21,9 @@
 # If you press any key, the script will complete the current range and exit.
 #
 #
+# Version 4, 23 June 2011. Corrected small mistake with id numbers.
+#                          Make sure that the results of the last thread are
+#                          saved and submitted before quitting.
 # Version 3, 23 June 2011. Added trickery to run two ranges at te same time
 #                          to keep the request pipe filled.
 # Version 2, 21 June 2011. Made 'max_concurrency' a constant.
@@ -180,7 +183,7 @@ class BFF
     
     # post result
     puts "#{ @profile_id_range }: Submitting results... (#{ compressed_result.size / 1024 } kB / #{ result.size / 1024 } kB uncompressed)"
-    req = Net::HTTP::Post.new("/done/#{ @profile_id_range.first }")
+    req = Net::HTTP::Post.new("/done/#{ @profile_id_range.first / 10000 }")
     req.add_field("Content-Type", "application/octet-stream")
     req.body = compressed_result
     res = Net::HTTP.start("friendster-tracker.heroku.com", 80) { |http| http.request(req) }
@@ -296,7 +299,7 @@ Thread.new do
 end
 
 Thread.new do
-  begin
+begin
   $bff_queue = []
 
   def print_status
@@ -363,9 +366,9 @@ Thread.new do
     first_bff.process_and_submit_results
   end
 
-  rescue
+rescue
   p $!
-  end
+end
 end
 
 until $interrupted
