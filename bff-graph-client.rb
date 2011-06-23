@@ -298,7 +298,7 @@ Thread.new do
   $interrupted = true
 end
 
-Thread.new do
+t = Thread.new do
 begin
   $bff_queue = []
 
@@ -375,4 +375,6 @@ until $interrupted
   $hydra.run
   sleep 1
 end
+
+t.join
 
