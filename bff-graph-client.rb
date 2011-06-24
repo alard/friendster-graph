@@ -238,7 +238,7 @@ class BFF
 
   def get_friends_page(profile_id, page, priority=:low)
     url = "http://www.friendster.com/friends/#{ profile_id }/#{ page }?r=#{ rand }"
-    request = Typhoeus::Request.new(url, :user_agent=>USER_AGENT, :follow_location=>false, :timeout=>60000)
+    request = Typhoeus::Request.new(url, :user_agent=>USER_AGENT, :follow_location=>false, :timeout=>40000, :connect_timeout=>30000)
     request.priority = priority
     request.on_complete do |response|
       # $stderr.print "."
