@@ -21,6 +21,7 @@
 # If you press any key, the script will complete the current range and exit.
 #
 #
+# Version 6, 25 June 2011. Kill any ranges that hang for a long time.
 # Version 5, 23 June 2011. Remove second range if finished before the first.
 # Version 4, 23 June 2011. Corrected small mistake with id numbers.
 #                          Make sure that the results of the last thread are
@@ -131,6 +132,10 @@ class BFF
     profile_id_range.each do |profile_id|
       get_profile(profile_id)
     end
+  end
+
+  def takes_too_long?
+    (Time.now.to_i - @start_time.to_i) > 500
   end
 
   def done?
@@ -318,8 +323,9 @@ begin
 
   until $interrupted
 
-    until $bff_queue.size < 2
+    until $bff_queue.size < 3
       until $bff_queue.any?{ |bff| bff.done? }
+        $bff_queue.delete_if { |bff| bff.takes_too_long? }
         print_status
         sleep 5
       end
@@ -358,13 +364,16 @@ begin
   end
 
   until $bff_queue.empty?
-    until $bff_queue.any?{ |bff| bff.done? }
+    until $bff_queue.any?{ |bff| bff.done? } or $bff_queue.empty?
+      $bff_queue.delete_if { |bff| bff.takes_too_long? }
       print_status
       sleep 5
     end
     first_bff = $bff_queue.select{ |bff| bff.done? }.first
-    $bff_queue.delete(first_bff)
-    first_bff.process_and_submit_results
+    if first_bff
+      $bff_queue.delete(first_bff)
+      first_bff.process_and_submit_results
+    end
   end
 
 rescue
