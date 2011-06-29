@@ -21,6 +21,7 @@
 # If you press any key, the script will complete the current range and exit.
 #
 #
+# Version 7, 29 June 2011. Fixed problem with occasional hanging requests.
 # Version 6, 25 June 2011. Kill any ranges that hang for a long time.
 # Version 5, 23 June 2011. Remove second range if finished before the first.
 # Version 4, 23 June 2011. Corrected small mistake with id numbers.
@@ -135,7 +136,7 @@ class BFF
   end
 
   def takes_too_long?
-    (Time.now.to_i - @start_time.to_i) > 500
+    (Time.now.to_i - @start_time.to_i) > 750
   end
 
   def done?
@@ -243,7 +244,7 @@ class BFF
 
   def get_friends_page(profile_id, page, priority=:low)
     url = "http://www.friendster.com/friends/#{ profile_id }/#{ page }?r=#{ rand }"
-    request = Typhoeus::Request.new(url, :user_agent=>USER_AGENT, :follow_location=>false, :timeout=>40000, :connect_timeout=>30000)
+    request = Typhoeus::Request.new(url, :user_agent=>USER_AGENT, :follow_location=>false, :timeout=>60000, :connect_timeout=>30000)
     request.priority = priority
     request.on_complete do |response|
       # $stderr.print "."
@@ -324,14 +325,16 @@ begin
   until $interrupted
 
     until $bff_queue.size < 3
-      until $bff_queue.any?{ |bff| bff.done? }
+      until $bff_queue.any?{ |bff| bff.done? } or $bff_queue.size < 3
         $bff_queue.delete_if { |bff| bff.takes_too_long? }
         print_status
         sleep 5
       end
       first_bff = $bff_queue.select{ |bff| bff.done? }.first
-      $bff_queue.delete(first_bff)
-      first_bff.process_and_submit_results
+      if first_bff
+        $bff_queue.delete(first_bff)
+        first_bff.process_and_submit_results
+      end
     end
 
     while not $interrupted and $hydra.running_requests >= MAX_CONCURRENCY * 0.9
